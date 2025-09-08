@@ -196,6 +196,17 @@
     100% { transform: rotate(360deg) !important; }
 }
 
+/* Analyze Button Hover Effects */
+.pointwise-analyze-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+}
+
+.pointwise-settings-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
 /* Global CSS for the spinner animation */
 @-webkit-keyframes pointwise-spin {
     0% { -webkit-transform: rotate(0deg) !important; }

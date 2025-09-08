@@ -622,26 +622,64 @@ if (!window.pointwiseExtensionLoaded) {
                             font-weight: 600 !important;
                         ">${domain}</span>
                     </div>
-                    <div class="pointwise-loading" style="
+                    <div class="pointwise-ready" style="
                         display: flex !important;
                         flex-direction: column !important;
                         align-items: center !important;
-                        gap: 16px !important;
+                        gap: 20px !important;
                         padding: 40px 20px !important;
                         color: rgba(255, 255, 255, 0.7) !important;
                     ">
-                        <div class="loading-spinner" style="
-                            width: 32px !important;
-                            height: 32px !important;
-                            border: 3px solid rgba(102, 126, 234, 0.2) !important;
-                            border-top: 3px solid #667eea !important;
-                            border-radius: 50% !important;
-                            animation: pointwise-spin 1s linear infinite !important;
-                        "></div>
-                        <span>Analyzing best rewards...</span>
+                        <div style="
+                            font-size: 48px !important;
+                            margin-bottom: 10px !important;
+                            opacity: 0.8 !important;
+                        ">🎯</div>
+                        <div style="
+                            font-size: 18px !important;
+                            font-weight: 600 !important;
+                            color: #ffffff !important;
+                            text-align: center !important;
+                            margin-bottom: 8px !important;
+                        ">Ready to Analyze</div>
+                        <div style="
+                            font-size: 14px !important;
+                            color: rgba(255, 255, 255, 0.7) !important;
+                            text-align: center !important;
+                            margin-bottom: 20px !important;
+                            max-width: 300px !important;
+                            line-height: 1.4 !important;
+                        ">Click below to get AI-powered credit card recommendations for this merchant</div>
+                        <button class="pointwise-analyze-btn" style="
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                            border: none !important;
+                            color: white !important;
+                            padding: 14px 32px !important;
+                            border-radius: 12px !important;
+                            cursor: pointer !important;
+                            font-size: 16px !important;
+                            font-weight: 600 !important;
+                            transition: all 0.3s ease !important;
+                            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
+                            font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+                        ">🚀 Analyze Best Cards</button>
                     </div>
-                    <div class="pointwise-footer">
-                        <button class="pointwise-settings-btn">Configure Extension</button>
+                    <div class="pointwise-footer" style="
+                        text-align: center !important;
+                        padding-top: 20px !important;
+                        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+                    ">
+                        <button class="pointwise-settings-btn" style="
+                            background: transparent !important;
+                            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                            color: rgba(255, 255, 255, 0.7) !important;
+                            padding: 8px 16px !important;
+                            border-radius: 8px !important;
+                            cursor: pointer !important;
+                            font-size: 14px !important;
+                            font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+                            transition: all 0.3s ease !important;
+                        ">⚙️ Configure Extension</button>
                     </div>
                 </div>
             </div>
@@ -653,9 +691,22 @@ if (!window.pointwiseExtensionLoaded) {
         // Add close handler
         analysisOverlay.querySelector('.pointwise-close-btn').addEventListener('click', closeAnalysisOverlay);
         
-        // Add configure extension handler (for loading state)
+        // Add configure extension handler
         analysisOverlay.querySelector('.pointwise-settings-btn').addEventListener('click', () => {
             openSettingsSidebar();
+        });
+        
+        // Add analyze button handler
+        analysisOverlay.querySelector('.pointwise-analyze-btn').addEventListener('click', async () => {
+            console.log('Pointwise: Analyze button clicked');
+            showLoadingState();
+            try {
+                const recommendations = await getCardRecommendations();
+                displayRecommendations(recommendations);
+            } catch (error) {
+                console.error('Pointwise: Error getting recommendations:', error);
+                displayRecommendations({ error: 'Unable to analyze cards. Please check your configuration and try again.' });
+            }
         });
         
         // Click outside to close
@@ -665,15 +716,65 @@ if (!window.pointwiseExtensionLoaded) {
             }
         });
         
-        // Get recommendations
-        try {
-            const recommendations = await getCardRecommendations();
-            displayRecommendations(recommendations);
-        } catch (error) {
-            console.error('Pointwise: Error getting recommendations:', error);
-            displayRecommendations({ error: 'Unable to analyze cards. Please check your configuration and try again.' });
-        }
         isAnalyzing = false;
+    }
+    
+    // Show loading state during analysis
+    function showLoadingState() {
+        if (!analysisOverlay) return;
+        
+        const content = analysisOverlay.querySelector('.pointwise-overlay-content');
+        const domain = window.location.hostname.replace('www.', '');
+        
+        content.innerHTML = `
+            <div class="pointwise-merchant" style="
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                margin-bottom: 20px !important;
+                padding: 12px 16px !important;
+                background: rgba(102, 126, 234, 0.1) !important;
+                border: 1px solid rgba(102, 126, 234, 0.2) !important;
+                border-radius: 12px !important;
+            ">
+                <span class="merchant-label" style="
+                    font-size: 14px !important;
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    font-weight: 500 !important;
+                ">Merchant:</span>
+                <span class="merchant-name" style="
+                    font-size: 14px !important;
+                    color: #ffffff !important;
+                    font-weight: 600 !important;
+                ">${domain}</span>
+            </div>
+            <div class="pointwise-loading" style="
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 16px !important;
+                padding: 40px 20px !important;
+                color: rgba(255, 255, 255, 0.7) !important;
+            ">
+                <div class="loading-spinner" style="
+                    width: 32px !important;
+                    height: 32px !important;
+                    border: 3px solid rgba(102, 126, 234, 0.2) !important;
+                    border-top: 3px solid #667eea !important;
+                    border-radius: 50% !important;
+                    animation: pointwise-spin 1s linear infinite !important;
+                "></div>
+                <span style="
+                    font-size: 16px !important;
+                    font-weight: 500 !important;
+                ">Analyzing best rewards...</span>
+                <div style="
+                    font-size: 14px !important;
+                    color: rgba(255, 255, 255, 0.5) !important;
+                    text-align: center !important;
+                ">This may take a few seconds</div>
+            </div>
+        `;
     }
     
     // Close analysis overlay
@@ -942,14 +1043,58 @@ if (!window.pointwiseExtensionLoaded) {
                     </div>
                 </div>
                 ${helpText}
-                <div class="pointwise-footer">
-                    <button class="pointwise-settings-btn">Configure Extension</button>
+                <div class="pointwise-footer" style="
+                    display: flex !important;
+                    gap: 12px !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                    flex-wrap: wrap !important;
+                    padding-top: 20px !important;
+                    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+                ">
+                    <button class="pointwise-analyze-btn" style="
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                        border: none !important;
+                        color: white !important;
+                        padding: 10px 20px !important;
+                        border-radius: 8px !important;
+                        cursor: pointer !important;
+                        font-size: 14px !important;
+                        font-weight: 600 !important;
+                        transition: all 0.3s ease !important;
+                        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+                        font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+                    ">🔄 Try Again</button>
+                    <button class="pointwise-settings-btn" style="
+                        background: transparent !important;
+                        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                        color: rgba(255, 255, 255, 0.7) !important;
+                        padding: 10px 20px !important;
+                        border-radius: 8px !important;
+                        cursor: pointer !important;
+                        font-size: 14px !important;
+                        font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+                        transition: all 0.3s ease !important;
+                    ">⚙️ Configure Extension</button>
                 </div>
             `;
             
             // Add handler for settings button
             content.querySelector('.pointwise-settings-btn').addEventListener('click', () => {
                 openSettingsSidebar();
+            });
+            
+            // Add handler for analyze button
+            content.querySelector('.pointwise-analyze-btn').addEventListener('click', async () => {
+                console.log('Pointwise: Re-analyze button clicked');
+                showLoadingState();
+                try {
+                    const recommendations = await getCardRecommendations();
+                    displayRecommendations(recommendations);
+                } catch (error) {
+                    console.error('Pointwise: Error getting recommendations:', error);
+                    displayRecommendations({ error: 'Unable to analyze cards. Please check your configuration and try again.' });
+                }
             });
             return;
         }
@@ -1211,8 +1356,39 @@ if (!window.pointwiseExtensionLoaded) {
                 </div>
             ` : ''}
             
-            <div class="pointwise-footer">
-                <button class="pointwise-settings-btn">Configure Extension</button>
+            <div class="pointwise-footer" style="
+                display: flex !important;
+                gap: 12px !important;
+                justify-content: center !important;
+                align-items: center !important;
+                flex-wrap: wrap !important;
+                padding-top: 20px !important;
+                border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+            ">
+                <button class="pointwise-analyze-btn" style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                    border: none !important;
+                    color: white !important;
+                    padding: 10px 20px !important;
+                    border-radius: 8px !important;
+                    cursor: pointer !important;
+                    font-size: 14px !important;
+                    font-weight: 600 !important;
+                    transition: all 0.3s ease !important;
+                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+                    font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+                ">🔄 Re-Analyze</button>
+                <button class="pointwise-settings-btn" style="
+                    background: transparent !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    color: rgba(255, 255, 255, 0.7) !important;
+                    padding: 10px 20px !important;
+                    border-radius: 8px !important;
+                    cursor: pointer !important;
+                    font-size: 14px !important;
+                    font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+                    transition: all 0.3s ease !important;
+                ">⚙️ Configure Extension</button>
             </div>
         `;
         
@@ -1221,6 +1397,19 @@ if (!window.pointwiseExtensionLoaded) {
         // Add handler for settings button
         content.querySelector('.pointwise-settings-btn').addEventListener('click', () => {
             openSettingsSidebar();
+        });
+        
+        // Add handler for re-analyze button
+        content.querySelector('.pointwise-analyze-btn').addEventListener('click', async () => {
+            console.log('Pointwise: Re-analyze button clicked');
+            showLoadingState();
+            try {
+                const recommendations = await getCardRecommendations();
+                displayRecommendations(recommendations);
+            } catch (error) {
+                console.error('Pointwise: Error getting recommendations:', error);
+                displayRecommendations({ error: 'Unable to analyze cards. Please check your configuration and try again.' });
+            }
         });
     }
     
@@ -1352,32 +1541,6 @@ if (!window.pointwiseExtensionLoaded) {
                         <!-- Selected cards will be populated here -->
                     </div>
                     
-                    <div id="sidebar-analyze-button-container" style="
-                        margin-top: 20px;
-                        padding-top: 20px;
-                        border-top: 1px solid rgba(255, 255, 255, 0.1);
-                    ">
-                        <button id="sidebar-analyze-button" style="
-                            width: 100%;
-                            padding: 16px;
-                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                            border: none;
-                            border-radius: 12px;
-                            color: white;
-                            font-family: 'Josefin Sans', sans-serif;
-                            font-size: 16px;
-                            font-weight: 600;
-                            cursor: pointer;
-                            transition: all 0.3s ease;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            gap: 10px;
-                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-                            <span>🎯</span>
-                            <span>Analyze Cards</span>
-                        </button>
-                    </div>
                     
                     <div id="sidebar-no-cards" style="
                         text-align: center;
@@ -1503,7 +1666,6 @@ if (!window.pointwiseExtensionLoaded) {
         setTimeout(() => {
             console.log('Pointwise: Calling setupSidebarCardSearch after DOM ready');
             setupSidebarCardSearch();
-            setupAnalyzeButton();
         }, 250);
         
         // Load and setup API key management
@@ -2068,76 +2230,6 @@ if (!window.pointwiseExtensionLoaded) {
         document.addEventListener('click', clickOutsideHandler);
     }
     
-    // Setup analyze button functionality
-    function setupAnalyzeButton() {
-        console.log('Pointwise: Setting up analyze button');
-        
-        const analyzeButton = settingsSidebar.querySelector('#sidebar-analyze-button');
-        if (!analyzeButton) {
-            console.error('Pointwise: Analyze button not found!');
-            return;
-        }
-        
-        analyzeButton.addEventListener('click', async () => {
-            try {
-                console.log('Pointwise: Analyze button clicked');
-                
-                // Check if we have cards and API key
-                const storage = await safeChromeStorageGet(['selectedCardIds', 'claudeApiKey']);
-                const hasCards = storage.selectedCardIds && storage.selectedCardIds.length > 0;
-                const hasApiKey = storage.claudeApiKey && storage.claudeApiKey.trim() !== '';
-                
-                if (!hasCards) {
-                    alert('Please add at least one credit card before running analysis.');
-                    return;
-                }
-                
-                if (!hasApiKey) {
-                    alert('Please configure your Claude API key before running analysis.');
-                    return;
-                }
-                
-                // Show loading state on button
-                const originalContent = analyzeButton.innerHTML;
-                analyzeButton.innerHTML = `
-                    <div class="loading-spinner" style="
-                        width: 16px !important;
-                        height: 16px !important;
-                        border: 2px solid rgba(255, 255, 255, 0.2) !important;
-                        border-top: 2px solid #ffffff !important;
-                        border-radius: 50% !important;
-                        animation: pointwise-spin 1s linear infinite !important;
-                        margin-right: 8px !important;
-                    "></div>
-                    <span>Analyzing...</span>
-                `;
-                analyzeButton.disabled = true;
-                
-                // Close the sidebar
-                closeSettingsSidebar();
-                
-                // Trigger the analysis
-                await checkAndRunAutomaticAnalysis();
-                
-                // Reset button state (in case sidebar is reopened)
-                setTimeout(() => {
-                    analyzeButton.innerHTML = originalContent;
-                    analyzeButton.disabled = false;
-                }, 3000);
-                
-            } catch (error) {
-                console.error('Pointwise: Error during analyze button click:', error);
-                alert('Analysis failed. Please try again.');
-                
-                // Reset button state
-                analyzeButton.innerHTML = `
-                    <span>🎯</span>
-                    <span>Analyze Cards</span>
-                `;
-                analyzeButton.disabled = false;
-            }
-        });
-    }
     
     // Add card in sidebar
     async function addSidebarCard(cardId) {
